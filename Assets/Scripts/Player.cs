@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    [SerializeField] private int _lives = 5;
+    private bool _frozen = false;
+
     [SerializeField] private GameObject laserPrefab;
     private float _reloadTime = 0.25f;
     private bool _reloading = false;
@@ -15,9 +18,16 @@ public class Player : MonoBehaviour
     private float leftBound = -10f;
     private float rightBound = 10f;
 
+    private SpawnManager _spawnManager;
+
     void Start()
     {
         transform.position = new Vector3(0,0,0);
+        _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
+
+        if (_spawnManager == null) {
+            Debug.LogError("spawnManager is Null.");
+        }
     }
 
     void Update()
@@ -27,6 +37,8 @@ public class Player : MonoBehaviour
     }
 
     void CalculateMovement() {
+        if (_frozen) return;
+
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
@@ -53,7 +65,6 @@ public class Player : MonoBehaviour
         float fireInput = Input.GetAxis("Jump");
         
         if (fireInput > 0.1 && !_reloading) {
-            Debug.Log("Firing!");
             _reloading = true;
             Instantiate(laserPrefab, transform.position + (Vector3.up * 0.8f), Quaternion.identity);
         }
@@ -64,6 +75,15 @@ public class Player : MonoBehaviour
                 _reloading = false;
                 _reloadingCounter = 0.0f;
             }
+        }
+    }
+
+    public void TakeDamage() {
+        _lives--;
+        if (_lives <= 0) {
+            _frozen = true;
+            _spawnManager.OnPlayerDeath();
+            Destroy(this.gameObject);
         }
     }
 }

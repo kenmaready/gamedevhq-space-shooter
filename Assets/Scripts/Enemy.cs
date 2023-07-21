@@ -5,9 +5,6 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
 
-    private float _xPosition;
-    private float _minXPosition = -10.0f;
-    private float _maxXPosition = 10.0f;
     private float _dropSpeed = 3.5f;
 
     private float _lowerBound = -4.0f;
@@ -15,7 +12,7 @@ public class Enemy : MonoBehaviour
 
     void Start()
     {
-        transform.position = new Vector3(GetRandomX(), transform.position.y, transform.position.z);
+
     }
 
     // Update is called once per frame
@@ -27,15 +24,20 @@ public class Enemy : MonoBehaviour
     void Drop() {
         transform.Translate(Vector3.down * _dropSpeed * Time.deltaTime);
         if (transform.position.y < _lowerBound) {
-            Restart();
+            transform.position = new Vector3(transform.position.x, _upperBound, transform.position.z);
         }
     }
 
-    void Restart() {
-        transform.position = new Vector3(GetRandomX(), _upperBound, 0.0f);
-    }
-
-    float GetRandomX() {
-        return Random.Range(_minXPosition, _maxXPosition);
+    private void OnTriggerEnter2D(Collider2D other) {
+        if (other.tag == "Player") {
+            Player player = other.GetComponent<Player>();
+            if (player != null) {
+                player.TakeDamage();
+            }
+            Destroy(gameObject);
+        } else if (other.tag == "Laser") {
+            Destroy(other.gameObject);
+            Destroy(gameObject);
+        }
     }
 }
