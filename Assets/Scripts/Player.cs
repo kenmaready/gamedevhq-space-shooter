@@ -12,6 +12,9 @@ public class Player : MonoBehaviour
     private bool _reloading = false;
     private float _reloadingCounter = 0.0f;
 
+    [SerializeField] private GameObject tripleShotPrefab;
+    private bool _tripleShotActive = false;
+
     private float _speed = 6.5f;
     private float upperBound = 0f;
     private float lowerBound = -4.0f;
@@ -33,6 +36,7 @@ public class Player : MonoBehaviour
     void Update()
     {
         CalculateMovement();
+        ToggleTripleShot();
         FireLaser();
     }
 
@@ -61,12 +65,23 @@ public class Player : MonoBehaviour
         }
     }
 
+    void ToggleTripleShot() {
+        if (Input.GetKeyDown(KeyCode.T)) {
+            _tripleShotActive = !_tripleShotActive;
+        }
+    }
+
     void FireLaser() {
         float fireInput = Input.GetAxis("Jump");
         
         if (fireInput > 0.1 && !_reloading) {
             _reloading = true;
-            Instantiate(laserPrefab, transform.position + (Vector3.up * 0.8f), Quaternion.identity);
+            
+            if (_tripleShotActive) {
+                Instantiate(tripleShotPrefab, transform.position, Quaternion.identity);
+            } else {
+                Instantiate(laserPrefab, transform.position + (Vector3.up * 0.8f), Quaternion.identity);
+            }
         }
 
         if (_reloading) {
