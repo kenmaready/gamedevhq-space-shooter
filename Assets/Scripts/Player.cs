@@ -12,7 +12,7 @@ public class Player : MonoBehaviour
     private bool _reloading = false;
     private float _reloadingCounter = 0.0f;
 
-    private float _speed = 4.5f;
+    private float _speed = 6.5f;
     private float upperBound = 0f;
     private float lowerBound = -4.0f;
     private float leftBound = -10f;
