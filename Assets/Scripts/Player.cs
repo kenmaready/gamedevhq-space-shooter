@@ -14,17 +14,32 @@ public class Player : MonoBehaviour
 
     [SerializeField] private GameObject tripleShotPrefab;
     private bool _tripleShotActive = false;
+    private float _tripleShotActiveTime = 5.0f;
+    private IEnumerator _tripleShotDeactivationRoutine;
 
-    private float _speed = 6.5f;
+    private float _speedUpSpeed = 10.0f;
+    private float _speedUpActiveTime = 5.0f;
+    private IEnumerator _speedUpDeactivationRoutine;
+
+    private bool _shieldsActive = false;
+    private float _shieldsActiveTime = 5.0f;
+    private IEnumerator _shieldsDeactivationRoutine;
+
+    private float _defaultSpeed = 6.5f;
+    private float _speed;
     private float upperBound = 0f;
     private float lowerBound = -4.0f;
     private float leftBound = -10f;
     private float rightBound = 10f;
 
     private SpawnManager _spawnManager;
+    [SerializeField] private GameObject _shieldVisualizer;
 
     void Start()
     {
+        _speed = _defaultSpeed;
+        DeactivateShields();
+
         transform.position = new Vector3(0,0,0);
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
 
@@ -94,6 +109,12 @@ public class Player : MonoBehaviour
     }
 
     public void TakeDamage() {
+        if (_shieldsActive) {
+            Debug.Log("Protected by Shields");
+            DeactivateShields();
+            return;
+        }
+        
         _lives--;
         if (_lives <= 0) {
             _frozen = true;
@@ -101,4 +122,62 @@ public class Player : MonoBehaviour
             Destroy(this.gameObject);
         }
     }
-}
+
+    public void ActivateTripleShot() {
+        _tripleShotActive = true;
+
+        // if any current routine is running to stop tripleshot, disable it
+        // so that it doesn't prematurely stop the new activation:
+        if (_tripleShotDeactivationRoutine != null) {
+            StopCoroutine(_tripleShotDeactivationRoutine);
+        }
+        
+        // start (new) coroutine to disable triple shot after allotted time:
+        _tripleShotDeactivationRoutine = DeactivateTripleShot();
+        StartCoroutine(_tripleShotDeactivationRoutine);
+    }
+
+    IEnumerator DeactivateTripleShot() {
+        yield return new WaitForSeconds(_tripleShotActiveTime);
+        _tripleShotActive = false;
+    }
+
+    public void ActivateSpeedUp() {
+        _speed = _speedUpSpeed;
+
+        if (_speedUpDeactivationRoutine != null) {
+            StopCoroutine(_speedUpDeactivationRoutine);
+        }
+
+        _speedUpDeactivationRoutine = DeactivateSpeedUp();
+        StartCoroutine(_speedUpDeactivationRoutine);
+    }
+
+    IEnumerator DeactivateSpeedUp() {
+        yield return new WaitForSeconds(_speedUpActiveTime);
+        _speed = _defaultSpeed;
+    }
+
+    public void ActivateShields() {
+        _shieldsActive = true;
+        _shieldVisualizer.SetActive(true);
+
+// 
+        // if (_shieldsDeactivationRoutine != null) {
+        //     StopCoroutine(_tripleShotDeactivationRoutine);
+        // }
+
+        // _shieldsDeactivationRoutine = DeactivateShields();
+        // StartCoroutine(_shieldsDeactivationRoutine);
+    }
+
+    // IEnumerator DeactivateShields() {
+    //     yield return new WaitForSeconds(_shieldsActiveTime);
+    //     _shieldsActive = false;
+    // }
+    
+    void DeactivateShields() {
+        _shieldsActive = false;
+        _shieldVisualizer.SetActive(false);
+        }
+    }

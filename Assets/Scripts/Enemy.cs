@@ -10,12 +10,6 @@ public class Enemy : MonoBehaviour
     private float _lowerBound = -4.0f;
     private float _upperBound = 8.0f;
 
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
     void Update()
     {
         Drop();

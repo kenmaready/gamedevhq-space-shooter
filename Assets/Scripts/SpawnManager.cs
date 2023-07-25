@@ -6,7 +6,7 @@ public class SpawnManager : MonoBehaviour
 {
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private GameObject _enemyContainer;
-    [SerializeField] private GameObject _powerupPrefab;
+    [SerializeField] private GameObject[] _powerupPrefabs;
 
     private float _spawnTime = 4.0f;
     private float _minXPosition = -10.0f;
@@ -14,22 +14,24 @@ public class SpawnManager : MonoBehaviour
     private float _upperBound = 8.0f;
 
     private bool _shouldSpawn = true;
-    private float _powerUpPercentage = 0.2f;
 
     void Start() {
-        StartCoroutine(SpawnRoutine());
+        StartCoroutine(SpawnEnemyRoutine());
+        StartCoroutine(SpawnPowerupRoutine());
     }
 
-    IEnumerator SpawnRoutine() {
+    IEnumerator SpawnEnemyRoutine() {
         
         while (_shouldSpawn) {
-            if (_shouldSpawn) {
-                SpawnEnemy();
-                if (Random.Range(0.0f, 1.0f) < _powerUpPercentage) {
-                    SpawnPowerUp();
-                }
-            }
+            SpawnEnemy();
             yield return new WaitForSeconds(_spawnTime);
+        }
+    }
+
+    IEnumerator SpawnPowerupRoutine() {
+        while (_shouldSpawn) {
+            SpawnPowerUp();
+            yield return new WaitForSeconds(Random.Range(3.0f, 7.0f));
         }
     }
 
@@ -41,7 +43,8 @@ public class SpawnManager : MonoBehaviour
 
     void SpawnPowerUp() {
         Vector3 spawnPOS = new Vector3(Random.Range(_minXPosition, _maxXPosition), _upperBound, 0.0f);
-        GameObject newPowerUp = Instantiate(_powerupPrefab, spawnPOS, Quaternion.identity);
+        int powerupSelector = Random.Range(0,_powerupPrefabs.Length);
+        GameObject newPowerup = Instantiate(_powerupPrefabs[powerupSelector], spawnPOS, Quaternion.identity);
     }
 
     public void OnPlayerDeath() {
