@@ -10,6 +10,13 @@ public class Enemy : MonoBehaviour
     private float _lowerBound = -4.0f;
     private float _upperBound = 8.0f;
 
+    private int _pointValue = 10;
+    private Player player;
+
+    void Start() {
+        player = GameObject.Find("Player").GetComponent<Player>();
+    }
+
     void Update()
     {
         Drop();
@@ -31,6 +38,9 @@ public class Enemy : MonoBehaviour
             Destroy(gameObject);
         } else if (other.tag == "Laser") {
             Destroy(other.gameObject);
+            if (player != null) {
+                player.IncreaseScore(_pointValue);
+            }
             Destroy(gameObject);
         }
     }

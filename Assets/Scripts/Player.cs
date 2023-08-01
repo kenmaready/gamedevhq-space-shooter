@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private int _lives = 5;
+    [SerializeField] private int _lives = 3;
     private bool _frozen = false;
 
     [SerializeField] private GameObject laserPrefab;
@@ -34,6 +34,8 @@ public class Player : MonoBehaviour
 
     private SpawnManager _spawnManager;
     [SerializeField] private GameObject _shieldVisualizer;
+    private int _score = 0;
+    private UIManager _uiManager;
 
     void Start()
     {
@@ -46,6 +48,13 @@ public class Player : MonoBehaviour
         if (_spawnManager == null) {
             Debug.LogError("spawnManager is Null.");
         }
+
+        _uiManager = FindAnyObjectByType<Canvas>().GetComponent<UIManager>();
+        if (_uiManager == null) {
+            Debug.LogError("uiManager is Null.");
+        } else {
+            _uiManager.UpdateScore(_score);
+        };
     }
 
     void Update()
@@ -115,12 +124,22 @@ public class Player : MonoBehaviour
             return;
         }
         
-        _lives--;
+        DecreaseLives();
         if (_lives <= 0) {
             _frozen = true;
             _spawnManager.OnPlayerDeath();
             Destroy(this.gameObject);
         }
+    }
+
+    public void IncreaseScore(int val) {
+        _score += val;
+        _uiManager.UpdateScore(_score);
+    }
+
+    public void DecreaseLives() {
+        _lives--;
+        _uiManager.UpdateLives(_lives);
     }
 
     public void ActivateTripleShot() {
