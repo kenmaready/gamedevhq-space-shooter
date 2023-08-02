@@ -22,7 +22,6 @@ public class Player : MonoBehaviour
     private IEnumerator _speedUpDeactivationRoutine;
 
     private bool _shieldsActive = false;
-    private float _shieldsActiveTime = 5.0f;
     private IEnumerator _shieldsDeactivationRoutine;
 
     private float _defaultSpeed = 6.5f;

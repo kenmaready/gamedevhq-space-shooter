@@ -22,7 +22,7 @@ public class UIManager : MonoBehaviour
         _gameOverDisplay.gameObject.SetActive(false);
         _restartGameDisplay.gameObject.SetActive(false);
         
-        _gm = FindObjectOfType<GameManager>();
+        _gm = FindObjectOfType<GameManager>().GetComponent<GameManager>();
         if (_gm == null) {
             Debug.LogError("_gam (GameManager) is Null.");
         }
