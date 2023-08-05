@@ -7,9 +7,9 @@ public class Powerup : MonoBehaviour
 
     private float _dropSpeed = 3.0f;
     private float _lowerBound = -4.0f;
-    private float _upperBound = 8.0f;
 
     [SerializeField] private int _powerupID;
+    [SerializeField] private AudioClip powerupSFX;
 
     void Update()
     {
@@ -44,6 +44,7 @@ public class Powerup : MonoBehaviour
                 }
 
             }
+            AudioSource.PlayClipAtPoint(powerupSFX, Camera.main.transform.position);
             Destroy(gameObject);
         }
     }

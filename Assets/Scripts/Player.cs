@@ -8,7 +8,11 @@ public class Player : MonoBehaviour
     private bool _frozen = false;
 
     [SerializeField] private GameObject laserPrefab;
-    private float _reloadTime = 0.25f;
+    [SerializeField] private AudioClip laserSFX;
+    [SerializeField] private AudioClip explosionSFX;
+
+    private AudioSource audioSource;
+    private float _reloadTime = 0.1f;
     private bool _reloading = false;
     private float _reloadingCounter = 0.0f;
 
@@ -33,6 +37,7 @@ public class Player : MonoBehaviour
 
     private SpawnManager _spawnManager;
     [SerializeField] private GameObject _shieldVisualizer;
+    [SerializeField] private GameObject[] _damageAnimations;
     private int _score = 0;
     private UIManager _uiManager;
 
@@ -40,6 +45,7 @@ public class Player : MonoBehaviour
     {
         _speed = _defaultSpeed;
         DeactivateShields();
+        DeactivateDamageAnimations();
 
         transform.position = new Vector3(0,0,0);
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
@@ -54,6 +60,11 @@ public class Player : MonoBehaviour
         } else {
             _uiManager.UpdateScore(_score);
         };
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) {
+            Debug.LogError("No AudioSource component found on Player Object.");
+        }
     }
 
     void Update()
@@ -105,6 +116,8 @@ public class Player : MonoBehaviour
             } else {
                 Instantiate(laserPrefab, transform.position + (Vector3.up * 0.8f), Quaternion.identity);
             }
+
+            audioSource.PlayOneShot(laserSFX, 0.5f);
         }
 
         if (_reloading) {
@@ -116,7 +129,17 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void OnTriggerEnter2D(Collider2D other) {
+
+        if (other.tag == "EnemyLaser") {
+            TakeDamage();
+            Destroy(other.gameObject);
+        }
+    }
+
     public void TakeDamage() {
+        audioSource.PlayOneShot(explosionSFX, 1f);
+
         if (_shieldsActive) {
             Debug.Log("Protected by Shields");
             DeactivateShields();
@@ -127,7 +150,7 @@ public class Player : MonoBehaviour
         if (_lives <= 0) {
             _frozen = true;
             _spawnManager.OnPlayerDeath();
-            Destroy(this.gameObject);
+            Destroy(this.gameObject, 0.4f);
         }
     }
 
@@ -138,6 +161,11 @@ public class Player : MonoBehaviour
 
     public void DecreaseLives() {
         _lives--;
+        if (_lives == 2) {
+            _damageAnimations[0].SetActive(true);
+        } else if (_lives == 1) {
+            _damageAnimations[1].SetActive(true);
+        }
         _uiManager.UpdateLives(_lives);
     }
 
@@ -197,5 +225,12 @@ public class Player : MonoBehaviour
     void DeactivateShields() {
         _shieldsActive = false;
         _shieldVisualizer.SetActive(false);
+    }
+
+    void DeactivateDamageAnimations() {
+        foreach (GameObject anim in _damageAnimations) {
+            anim.SetActive(false);
         }
     }
+
+}
