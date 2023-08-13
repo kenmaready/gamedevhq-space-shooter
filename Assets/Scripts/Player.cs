@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+
+    public bool isPlayerOne = true;
+
     [SerializeField] private int _lives = 3;
     private bool _frozen = false;
 
@@ -11,7 +14,6 @@ public class Player : MonoBehaviour
     [SerializeField] private AudioClip laserSFX;
     [SerializeField] private AudioClip explosionSFX;
 
-    private AudioSource audioSource;
     private float _reloadTime = 0.1f;
     private bool _reloading = false;
     private float _reloadingCounter = 0.0f;
@@ -35,21 +37,29 @@ public class Player : MonoBehaviour
     private float leftBound = -10f;
     private float rightBound = 10f;
 
-    private SpawnManager _spawnManager;
     [SerializeField] private GameObject _shieldVisualizer;
     [SerializeField] private GameObject[] _damageAnimations;
     private int _score = 0;
+
+    private AudioSource _audioSource;
+    private GameManager _gameManager;
+    private SpawnManager _spawnManager;
     private UIManager _uiManager;
 
     void Start()
     {
-        _speed = _defaultSpeed;
-        DeactivateShields();
-        DeactivateDamageAnimations();
 
-        transform.position = new Vector3(0,0,0);
+        _audioSource = GetComponent<AudioSource>();
+        if (_audioSource == null) {
+            Debug.LogError("No AudioSource component found on Player Object.");
+        }
+
+        _gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        if (_gameManager == null) {
+            Debug.LogError("No GameManager found.");
+        }
+
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
-
         if (_spawnManager == null) {
             Debug.LogError("spawnManager is Null.");
         }
@@ -61,9 +71,23 @@ public class Player : MonoBehaviour
             _uiManager.UpdateScore(_score);
         };
 
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null) {
-            Debug.LogError("No AudioSource component found on Player Object.");
+        _speed = _defaultSpeed;
+        DeactivateShields();
+        DeactivateDamageAnimations();
+        SetStartingPosition();
+    }
+
+    void SetStartingPosition() {
+        if (_gameManager.isCoopMode) {
+            if (isPlayerOne) {
+                transform.position = new Vector3(-5.75f, -3.0f, 0.0f);
+            }
+
+            if (!isPlayerOne) {
+                transform.position = new Vector3(5.75f, -3.0f, 0.0f);
+            }
+        } else {
+            transform.position = new Vector3(0,0,0);
         }
     }
 
@@ -77,8 +101,8 @@ public class Player : MonoBehaviour
     void CalculateMovement() {
         if (_frozen) return;
 
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        float horizontalInput = GetHorizontalInput();
+        float verticalInput = GetVerticalInput();
 
         // transform.Translate(Vector3.right * horizontalInput * _speed * Time.deltaTime);
         // transform.Translate(Vector3.up * verticalInput * _speed * Time.deltaTime);
@@ -99,6 +123,35 @@ public class Player : MonoBehaviour
         }
     }
 
+    float GetHorizontalInput() {
+        if (!_gameManager.isCoopMode) {
+            if (Input.GetAxis("Horizontal") != 0) {
+                return Input.GetAxis("Horizontal");
+             } else return Input.GetAxis("Horizontal2");
+        }
+
+        if (isPlayerOne) {
+            return Input.GetAxis("Horizontal");
+        } else {
+            return Input.GetAxis("Horizontal2");
+        }
+    }
+
+    float GetVerticalInput() {
+        if (!_gameManager.isCoopMode) {
+            if (Input.GetAxis("Vertical") != 0) {
+                return Input.GetAxis("Vertical");
+             } else return Input.GetAxis("Vertical2");
+        }
+
+
+        if (isPlayerOne) {
+            return Input.GetAxis("Vertical");
+        } else {
+            return Input.GetAxis("Vertical2");
+        }
+    }
+
     void ToggleTripleShot() {
         if (Input.GetKeyDown(KeyCode.T)) {
             _tripleShotActive = !_tripleShotActive;
@@ -106,7 +159,7 @@ public class Player : MonoBehaviour
     }
 
     void FireLaser() {
-        float fireInput = Input.GetAxis("Jump");
+        float fireInput = GetFireInput();
         
         if (fireInput > 0.1 && !_reloading) {
             _reloading = true;
@@ -117,7 +170,7 @@ public class Player : MonoBehaviour
                 Instantiate(laserPrefab, transform.position + (Vector3.up * 0.8f), Quaternion.identity);
             }
 
-            audioSource.PlayOneShot(laserSFX, 0.5f);
+            _audioSource.PlayOneShot(laserSFX, 0.5f);
         }
 
         if (_reloading) {
@@ -126,6 +179,18 @@ public class Player : MonoBehaviour
                 _reloading = false;
                 _reloadingCounter = 0.0f;
             }
+        }
+    }
+
+    float GetFireInput() {
+        if (!_gameManager.isCoopMode) {
+            return Input.GetAxis("Fire1") + Input.GetAxis("Fire2"); 
+        }
+
+        if (isPlayerOne) {
+            return Input.GetAxis("Fire1");
+        } else {
+            return Input.GetAxis("Fire2");
         }
     }
 
@@ -138,7 +203,7 @@ public class Player : MonoBehaviour
     }
 
     public void TakeDamage() {
-        audioSource.PlayOneShot(explosionSFX, 1f);
+        _audioSource.PlayOneShot(explosionSFX, 1f);
 
         if (_shieldsActive) {
             Debug.Log("Protected by Shields");

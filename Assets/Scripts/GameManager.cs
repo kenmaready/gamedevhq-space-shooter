@@ -5,7 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    private bool _isGameOver;
+    public bool _isGameOver;
+    public bool isCoopMode = false;
 
     public void GameOver() {
         _isGameOver = true;
@@ -15,15 +16,30 @@ public class GameManager : MonoBehaviour
         if (_isGameOver) {
             if (Input.GetKeyDown(KeyCode.R)) {
                 RestartGame();
+            } else if (Input.GetKeyDown(KeyCode.Escape)) {
+                    SceneManager.LoadScene(0);
+                    return;
+            }
+        } else {
+            if (Input.GetKeyDown(KeyCode.Escape)) {
+                Application.Quit();
             }
         }
+    }
 
-        if (Input.GetKeyDown(KeyCode.Escape)) {
-            Application.Quit();
-        }
+    public void PauseGame() {
+        Time.timeScale = 0;
+    }
+
+    public void ResumeGame() {
+        Time.timeScale = 1;
     }
 
     private void RestartGame() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void LoadMainMenu() {
+        SceneManager.LoadScene(0);
     }
 }

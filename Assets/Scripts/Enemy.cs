@@ -24,7 +24,7 @@ public class Enemy : MonoBehaviour
 
 
     void Start() {
-        player = GameObject.Find("Player").GetComponent<Player>();
+        player = GameObject.FindObjectOfType<Player>().GetComponent<Player>();
         if (player == null) {
             Debug.LogError("player object not found.");
         }
