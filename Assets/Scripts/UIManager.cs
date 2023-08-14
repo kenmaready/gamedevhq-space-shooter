@@ -4,11 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System;
 
 public class UIManager : MonoBehaviour
 {
 
     [SerializeField] private TextMeshProUGUI _scoreDisplay;
+    [SerializeField] private TextMeshProUGUI _highScoreDisplay;
     [SerializeField] private Image _livesDisplay; 
     [SerializeField] private TextMeshProUGUI _gameOverDisplay;
     [SerializeField] private TextMeshProUGUI _restartGameDisplay;
@@ -17,7 +19,13 @@ public class UIManager : MonoBehaviour
 
     private GameManager _gm;
     private Animator _pausePanelAnimator;
-    private Vector3 _pausePanelOriginalPOS;
+
+    private void Awake() {
+        _gm = FindObjectOfType<GameManager>().GetComponent<GameManager>();
+        if (_gm == null) {
+            Debug.LogError("_gam (GameManager) is Null.");
+        }
+    }
 
     void Start()
     {
@@ -26,12 +34,7 @@ public class UIManager : MonoBehaviour
         _gameOverDisplay.gameObject.SetActive(false);
         _restartGameDisplay.gameObject.SetActive(false);
         _pausePanel.gameObject.SetActive(true);
-        _pausePanelOriginalPOS = _pausePanel.transform.position;
-
-        _gm = FindObjectOfType<GameManager>().GetComponent<GameManager>();
-        if (_gm == null) {
-            Debug.LogError("_gam (GameManager) is Null.");
-        }
+        _highScoreDisplay.text = "High Score: " + _gm.GetHighScore().ToString("000000");
 
         _pausePanelAnimator = _pausePanel.GetComponent<Animator>();
         if (_pausePanelAnimator == null) {
@@ -48,11 +51,14 @@ public class UIManager : MonoBehaviour
 
     public void UpdateScore(int val) {
         _scoreDisplay.text = "Score: " + val.ToString("00000");
+        if (val > _gm.GetHighScore()) {
+            _gm.UpdateHighScore(val);
+            _highScoreDisplay.text = "High Score: " + val.ToString("000000");
+        }
     }
 
     public void UpdateLives(int livesRemaining) {
-        Debug.Log("livesRemaining: " + livesRemaining + " | size of array: " + (_liveSprites.Length - 1));
-        _livesDisplay.sprite = _liveSprites[livesRemaining];
+        _livesDisplay.sprite = _liveSprites[Math.Max(livesRemaining,0)];
 
         if (livesRemaining <= 0) {
             GameOverSequence();
@@ -99,6 +105,5 @@ public class UIManager : MonoBehaviour
         _gm.ResumeGame();
         _pausePanelAnimator.SetBool("isPaused", false);
         _pausePanel.gameObject.SetActive(false);
-        _pausePanel.transform.position = _pausePanelOriginalPOS;
     }
 }

@@ -37,6 +37,9 @@ public class Player : MonoBehaviour
     private float leftBound = -10f;
     private float rightBound = 10f;
 
+    private float horizontalInput;
+    private float verticalInput;
+
     [SerializeField] private GameObject _shieldVisualizer;
     [SerializeField] private GameObject[] _damageAnimations;
     private int _score = 0;
@@ -101,8 +104,8 @@ public class Player : MonoBehaviour
     void CalculateMovement() {
         if (_frozen) return;
 
-        float horizontalInput = GetHorizontalInput();
-        float verticalInput = GetVerticalInput();
+        horizontalInput = GetHorizontalInput();
+        verticalInput = GetVerticalInput();
 
         // transform.Translate(Vector3.right * horizontalInput * _speed * Time.deltaTime);
         // transform.Translate(Vector3.up * verticalInput * _speed * Time.deltaTime);
@@ -206,7 +209,6 @@ public class Player : MonoBehaviour
         _audioSource.PlayOneShot(explosionSFX, 1f);
 
         if (_shieldsActive) {
-            Debug.Log("Protected by Shields");
             DeactivateShields();
             return;
         }
